@@ -24,6 +24,7 @@ Detected flash size: 16MB
 Flash type set in eFuse: quad (4 data lines)
 Hard resetting via RTS pin...
 
+https://github.com/platformio/platform-espressif32/tree/develop/boards
 
 Platformio.ini:
 [env:esp32-s3-devkitc-1-8mb]
