@@ -1,0 +1,34 @@
+This looks like my board: https://github.com/vcc-gnd/YD-ESP32-S3
+I suspect that the repo owner is not the original designer, as the repo owner claims, but all the data seems to be correct so...
+
+
+USB connected to the USB-C plug labeled 'COM' on the bottom side of the board:
+esptool installed via pip install esptool (installs an exe on Windows, esptool.py on linux)
+Used 'usbpid list' to identify the COM Port on Windows
+
+PS C:\gits\bluetooth_serial_bridge>esptool -p COM7 flash_id
+esptool.py v4.7.0
+Serial port COM7
+Connecting....
+Detecting chip type... ESP32-S3
+Chip is ESP32-S3 (QFN56) (revision v0.1)
+Features: WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)
+Crystal is 40MHz
+MAC: f4:12:fa:e9:a5:c0
+Uploading stub...
+Running stub...
+Stub running...
+Manufacturer: c8
+Device: 4018
+Detected flash size: 16MB
+Flash type set in eFuse: quad (4 data lines)
+Hard resetting via RTS pin...
+
+
+Platformio.ini:
+[env:esp32-s3-devkitc-1-8mb]
+platform = espressif32
+board = esp32-s3-devkitc-1-8mb
+framework = arduino
+
+docker run -it --rm -v "${PWD}/main:/project/main" --device=/dev/ttyACM0:/dev/ttyACM0 my-esp32-image bash

@@ -1,0 +1,39 @@
+There's a good chance I won't remember all the steps to get this working, so...
+
+#########################
+# BEGIN WINDOWS SESSION (not WSL2)
+#########################
+
+command(s):
+cd c:\gits\bluetooth_serial_bridge
+docker pull python:3
+docker build -t bluetooth_serial_bridge .
+usbipd list
+
+output:
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+2-3    1a86:55d3  USB-Enhanced-SERIAL CH343 (COM7)                              Not shared
+...
+
+command(s):
+usbipd bind --busid 2-3
+usbipd attach -w -a -b 2-3
+
+output:
+usbipd: info: Using WSL distribution 'Debian' to attach; the device will be available in all WSL 2 distributions.
+usbipd: info: Using IP address 172.20.64.1 to reach the host.
+usbipd: info: Starting endless attach loop; press Ctrl+C to quit.
+WSL Attached
+
+#########################
+# END WINDOWS SESSION
+#########################
+
+#########################
+# BEGIN WSL2 SESSION
+#########################
+command(s):
+docker run -it --rm -v "${PWD}:/project" --device=/dev/ttyACM0:/dev/ttyACM0 my-esp32-image bash
+
+
