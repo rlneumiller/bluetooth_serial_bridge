@@ -1,5 +1,2 @@
-build/
-.git
-.vscode
-*.elf
-*.bin
+.dockerignore
+platformio.sh

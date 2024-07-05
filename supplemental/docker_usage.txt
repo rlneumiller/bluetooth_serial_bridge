@@ -1,12 +1,8 @@
-There's a good chance I won't remember all the steps to get this working, so...
 
-#########################
-# BEGIN WINDOWS SESSION (not WSL2)
-#########################
-
+context: powershell
 command(s):
 cd c:\gits\bluetooth_serial_bridge
-docker pull python:3
+
 docker build -t bluetooth_serial_bridge .
 usbipd list
 
@@ -16,9 +12,12 @@ BUSID  VID:PID    DEVICE                                                        
 2-3    1a86:55d3  USB-Enhanced-SERIAL CH343 (COM7)                              Not shared
 ...
 
+context: powershell
 command(s):
 usbipd bind --busid 2-3
 usbipd attach -w -a -b 2-3
+
+note: Docker uses wsl under the hood so the com port will be exposed via wsl i.e: /dev/ttyUSB0 or /dev/ttyACM0
 
 output:
 usbipd: info: Using WSL distribution 'Debian' to attach; the device will be available in all WSL 2 distributions.
@@ -26,14 +25,26 @@ usbipd: info: Using IP address 172.20.64.1 to reach the host.
 usbipd: info: Starting endless attach loop; press Ctrl+C to quit.
 WSL Attached
 
-#########################
-# END WINDOWS SESSION
-#########################
-
-#########################
-# BEGIN WSL2 SESSION
-#########################
+context: Debian wsl
 command(s):
-docker run -it --rm -v "${PWD}:/project" --device=/dev/ttyACM0:/dev/ttyACM0 my-esp32-image bash
+ls /dev/
+
+output:
+$ ls /dev
+autofs           cuse  hvc1  kmsg   loop5         null   ram1   ram2  ram9    sde  stderr  tty11  tty18  tty24  tty30  tty37  tty43  tty5   tty56  tty62    ttyS1    vcsa       vport0p1
+block            dri   hvc2  kvm    loop6         nvram  ram10  ram3  random  sg0  stdin   tty12  tty19  tty25  tty31  tty38  tty44  tty50  tty57  tty63    ttyS2    vcsa1      vsock
+bsg              dxg   hvc3  loop0  loop7         ppp    ram11  ram4  rtc0    sg1  stdout  tty13  tty2   tty26  tty32  tty39  tty45  tty51  tty58  tty7     ttyS3    vcsu       zero
+btrfs-control    fd    hvc4  loop1  loop-control  ptmx   ram12  ram5  sda     sg2  tty     tty14  tty20  tty27  tty33  tty4   tty46  tty52  tty59  tty8     ttyUSB0  vcsu1
+bus              full  hvc5  loop2  mapper        ptp0   ram13  ram6  sdb     sg3  tty0    tty15  tty21  tty28  tty34  tty40  tty47  tty53  tty6   tty9     urandom  vfio
+console          fuse  hvc6  loop3  mem           pts    ram14  ram7  sdc     sg4  tty1    tty16  tty22  tty29  tty35  tty41  tty48  tty54  tty60  ttyACM0  vcs      vhost-net
+cpu_dma_latency  hvc0  hvc7  loop4  net           ram0   ram15  ram8  sdd     shm  tty10   tty17  tty23  tty3   tty36  tty42  tty49  tty55  tty61  ttyS0    vcs1     vport0p0
+
+note: Docker uses wsl under the hood so the com port will be exposed via wsl i.e: /dev/ttyUSB0 or in my case /dev/ttyACM0
+
+context: powershell
+command(s):
+docker run -it --rm -v "${PWD}:/workspace" --device /dev/ttyACM0 bluetooth_serial_bridge
+
+
 
 
