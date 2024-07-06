@@ -1,0 +1,55 @@
+Windows 11
+Visual Studio Code Version 1.91.0
+
+PlatformIO Core, version 6.1.16a1
+
+PLATFORM: Espressif 32 (6.7.0) > Espressif ESP32-S3-DevKitC-1-N16R8V (16 MB Flash Quad, 8 MB PSRAM Octal)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 16MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20016.0 (2.0.16)
+ - tool-esptoolpy @ 1.40501.0 (4.5.1)
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+
+Docker Desktop 4.31.1 (153621)
+Docker Engine v26.1.4
+
+I am working in a WSL2 backed docker container specified by:
+FROM python:3.9.0-slim
+
+ENV APP_VERSION="6.1.7" \
+    APP="esp32_platformio_core"
+
+LABEL app.name="${APP}" \
+    app.version="${APP_VERSION}" \
+    maintainer="DaOfficialWizard <pyr0ndet0s97@gmail.com>"
+
+RUN python -m pip install --upgrade pip && \
+    pip install distro && \
+    pip install -U platformio==${APP_VERSION} && \
+    mkdir -p /workspace && \
+    mkdir -p /.platformio && \
+    chmod a+rwx /.platformio && \
+    pio upgrade --dev && \
+    pio pkg install -g --platform "platformio/espressif32@^6.3.0" && \
+    pio pkg update --global && \
+    apt update && apt install -y git nano unzip bash && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
+WORKDIR /workspace
+
+COPY esp32-s3-devkitc1-n16r8.json /root/.platformio/platforms/espressif32/boards
+
+#ENTRYPOINT ["platformio"]
+CMD ["bash"] # For debugging container config
+
+My project is named: bluetooth_serial_bridge
+
+I am using visual studio code to remotely connect to a docker container provisioned with platformio amd ESP-IDF. 
+The docker container is started via 'docker run -it --rm -v "${PWD}:/workspace" --device /dev/ttyACM0 bluetooth_serial_bridge'
+My goal is to write an app that will run on an esp32-S3.
+The esp32-s3 is connected to the 3D Printer via the printers usb-c port. 
+The app will allow the esp32-s3 to pair with the Windows 11 PC via Bluetooth.
+Ultimately my app "bluetooth_serial_bridge" will allow me to upload a gcode file to my Ender3 Neo Max 3D Printer via Bluetooth from a Windows 11 PC.
+
+I am using the library ESPAsyncWebServer from https://github.com/me-no-dev/ESPAsyncWebServer

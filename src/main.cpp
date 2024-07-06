@@ -1,5 +1,14 @@
 #include <Arduino.h>
 #include "BluetoothSerial.h" // Library for Bluetooth Serial
+//#include <esp_bt_device.h>
+#include <nvs_flash.h>
+#include <esp_bt_main.h>
+
+#include <SPIFFS.h>
+#include <WiFi.h>
+#include "esp_bt_device.h"
+#include "esp_bt.h"
+#include "esp_spp.h"
 
 BluetoothSerial SerialBT;
 
@@ -13,11 +22,16 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     case ESP_SPP_START_EVT:
         Serial.println("ESP_SPP_START_EVT");
         esp_bt_dev_set_device_name(SPP_SERVER_NAME);
-        esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 0, 0)
+          esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        #else
+          esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+        #endif        
+        //esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
         esp_spp_start_srv(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_SLAVE, 0, SPP_SERVER_NAME);
         break;
-    case ESP_SPP_DISCOVER_EVT:
-        Serial.println("ESP_SPP_DISCOVER_EVT");
+    case ESP_SPP_DISCOVERY_COMP_EVT:
+        Serial.println("ESP_SPP_DISCOVERY_COMP_EVT");
         break;
     case ESP_SPP_OPEN_EVT:
         Serial.println("ESP_SPP_OPEN_EVT");
@@ -44,8 +58,20 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     case ESP_SPP_WRITE_EVT:
         Serial.println("ESP_SPP_WRITE_EVT");
         break;
+    case ESP_SPP_INIT_EVT:
+        Serial.println("ESP_SPP_INIT_EVT");
+        break;
     case ESP_SPP_UNINIT_EVT:
         Serial.println("ESP_SPP_UNINIT_EVT");
+        break;
+    case ESP_SPP_SRV_STOP_EVT:
+        Serial.println("ESP_SPP_SRV_STOP_EVT");
+        break;
+    case ESP_SPP_VFS_REGISTER_EVT:
+        Serial.println("ESP_SPP_VFS_REGISTER_EVT");
+        break;
+    case ESP_SPP_VFS_UNREGISTER_EVT:
+        Serial.println("ESP_SPP_VFS_UNREGISTER_EVT");
         break;
     default:
         break;
@@ -53,6 +79,11 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
 }
 
 void setup() {
+    if (!SPIFFS.begin(true)) {
+        Serial.println("An error occurred while mounting SPIFFS");
+        return;
+    }    
+
     Serial.begin(115200);
     SerialBT.begin(SPP_SERVER_NAME); // Start Bluetooth serial with the given name
 
@@ -106,4 +137,16 @@ void loop() {
             Serial.println("Bluetooth not connected");
         }
     }
+}
+
+extern "C" {
+void app_main() {
+    // Your setup code here
+    setup(); 
+
+    // Your main loop code here
+    while (true) {
+        loop();
+    }
+}
 }
