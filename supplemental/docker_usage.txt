@@ -43,7 +43,12 @@ note: Docker uses wsl under the hood so the com port will be exposed via wsl i.e
 
 context: powershell
 command(s):
+cd <Dockerfile location>
+docker build -t bluetooth_serial_bridge
 docker run -it --rm -v "${PWD}:/workspace" --device /dev/ttyACM0 bluetooth_serial_bridge
+
+note:
+Play with docker compose and docker volumes later for container change\data persistence
 
 
 
